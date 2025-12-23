@@ -1,8 +1,994 @@
 /*
+ * Obsidian Perforce Plugin Styles
+ */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* ============================================
+   Status Bar
+   ============================================ */
 
-If your plugin does not need CSS, delete this file.
+.p4-status-bar {
+    cursor: pointer;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
 
-*/
+.p4-status-bar:hover {
+    background-color: var(--background-modifier-hover);
+    border-radius: 4px;
+}
+
+.p4-status-spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    animation: p4-spin 1s linear infinite;
+}
+
+.p4-status-spinner svg {
+    width: 14px;
+    height: 14px;
+}
+
+@keyframes p4-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.p4-status-text {
+    /* Inherits font from parent */
+}
+
+/* ============================================
+   Source Control View
+   ============================================ */
+
+.p4-source-control-view,
+.p4-history-view,
+.p4-diff-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.p4-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    background-color: var(--background-secondary);
+}
+
+.p4-view-title {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-normal);
+}
+
+.p4-view-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.p4-action-button {
+    background: transparent;
+    border: none;
+    padding: 4px 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p4-action-button:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+.p4-view-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+/* ============================================
+   Changelist Section
+   ============================================ */
+
+.p4-changelist-section {
+    margin-bottom: 16px;
+}
+
+.p4-changelist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: var(--background-secondary-alt);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.p4-changelist-title-container {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.p4-changelist-title {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.p4-changelist-count {
+    font-size: 11px;
+    color: var(--text-faint);
+}
+
+.p4-changelist-desc {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.p4-changelist-actions {
+    display: flex;
+    gap: 2px;
+}
+
+.p4-changelist-actions .clickable-icon {
+    padding: 2px 4px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.p4-changelist-edit-btn {
+    color: var(--text-accent);
+}
+
+.p4-changelist-delete-btn {
+    color: var(--text-error);
+}
+
+.p4-changelist-delete-btn:hover {
+    background-color: var(--background-modifier-error);
+}
+
+.p4-file-empty {
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+.p4-small-button {
+    background: transparent;
+    border: none;
+    padding: 2px 4px;
+    cursor: pointer;
+    border-radius: 3px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p4-small-button:hover {
+    background-color: var(--background-modifier-hover);
+    color: var(--text-normal);
+}
+
+/* ============================================
+   File List (obsidian-git style)
+   ============================================ */
+
+.p4-file-list {
+    padding: 0;
+}
+
+/* Use Obsidian's native tree item styling */
+.workspace-leaf-content[data-type="p4-source-control"] .tree-item-self {
+    align-items: center;
+}
+
+.workspace-leaf-content[data-type="p4-source-control"] .tree-item-self:hover .clickable-icon {
+    color: var(--icon-color-hover);
+}
+
+/* Tools container (buttons + type indicator) */
+.p4-tools {
+    display: flex;
+    margin-left: auto;
+}
+
+.p4-tools .type {
+    padding-left: var(--size-2-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 11px;
+    font-weight: 600;
+}
+
+.p4-tools .type[data-type="E"] { color: var(--color-blue); }
+.p4-tools .type[data-type="A"] { color: var(--color-green); }
+.p4-tools .type[data-type="D"] { color: var(--color-red); }
+.p4-tools .type[data-type="M"] { color: orange; }
+.p4-tools .type[data-type="I"] { color: var(--color-purple); }
+.p4-tools .type[data-type="B"] { color: var(--color-cyan); }
+
+.p4-tools .buttons {
+    display: flex;
+}
+
+.p4-tools .buttons > * {
+    padding: 0 0;
+    height: auto;
+}
+
+/* ============================================
+   Action Badges
+   ============================================ */
+
+.p4-action-badge {
+    flex-shrink: 0;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.p4-action-edit {
+    background-color: var(--color-blue);
+    color: var(--text-on-accent);
+}
+
+.p4-action-add {
+    background-color: var(--color-green);
+    color: var(--text-on-accent);
+}
+
+.p4-action-delete {
+    background-color: var(--color-red);
+    color: var(--text-on-accent);
+}
+
+.p4-action-branch,
+.p4-action-integrate {
+    background-color: var(--color-purple);
+    color: var(--text-on-accent);
+}
+
+.p4-action-move\/add,
+.p4-action-move\/delete {
+    background-color: var(--color-orange);
+    color: var(--text-on-accent);
+}
+
+/* ============================================
+   Empty & Error States
+   ============================================ */
+
+.p4-empty-state,
+.p4-error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.p4-error-state {
+    color: var(--text-error);
+}
+
+.p4-muted {
+    color: var(--text-faint);
+    font-size: 12px;
+}
+
+.p4-warning {
+    color: var(--text-warning);
+}
+
+.p4-error {
+    color: var(--text-error);
+}
+
+/* ============================================
+   Diff View
+   ============================================ */
+
+.p4-diff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    background-color: var(--background-secondary);
+}
+
+.p4-diff-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.p4-diff-icon {
+    color: var(--text-muted);
+}
+
+.p4-diff-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.p4-diff-content {
+    flex: 1;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Side-by-side labels */
+.p4-diff-labels {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+    font-size: 11px;
+}
+
+.p4-diff-label-left,
+.p4-diff-label-right {
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: var(--text-muted);
+}
+
+.p4-diff-label-left {
+    background-color: rgba(var(--color-red-rgb), 0.2);
+}
+
+.p4-diff-label-right {
+    background-color: rgba(var(--color-green-rgb), 0.2);
+}
+
+/* CodeMirror MergeView container */
+.p4-merge-view-container {
+    height: 100%;
+    overflow: hidden;
+}
+
+.p4-merge-view-container .cm-mergeView {
+    height: 100%;
+}
+
+.p4-merge-view-container .cm-mergeViewEditor {
+    height: 100%;
+}
+
+/* Fallback diff panes */
+.p4-diff-fallback {
+    display: flex;
+    gap: 8px;
+    height: 100%;
+    overflow: hidden;
+}
+
+.p4-diff-pane {
+    flex: 1;
+    overflow: auto;
+    padding: 8px;
+    background-color: var(--background-secondary);
+    border-radius: 4px;
+}
+
+.p4-diff-pane h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.p4-diff-pane pre {
+    margin: 0;
+    font-family: var(--font-monospace);
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.p4-diff-empty {
+    padding: 32px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.p4-diff-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.p4-diff-table tr {
+    border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.p4-diff-linenum {
+    width: 50px;
+    padding: 0 8px;
+    text-align: right;
+    color: var(--text-faint);
+    background-color: var(--background-secondary);
+    border-right: 1px solid var(--background-modifier-border);
+    user-select: none;
+    font-size: 11px;
+}
+
+.p4-diff-line-content {
+    padding: 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.p4-diff-line-content pre {
+    margin: 0;
+    padding: 0 8px;
+}
+
+.p4-diff-line-content code {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.p4-diff-added {
+    background-color: rgba(var(--color-green-rgb), 0.15);
+}
+
+.p4-diff-added .p4-diff-linenum {
+    background-color: rgba(var(--color-green-rgb), 0.2);
+}
+
+.p4-diff-removed {
+    background-color: rgba(var(--color-red-rgb), 0.15);
+}
+
+.p4-diff-removed .p4-diff-linenum {
+    background-color: rgba(var(--color-red-rgb), 0.2);
+}
+
+.p4-diff-hunk {
+    background-color: var(--background-secondary-alt);
+    color: var(--text-muted);
+}
+
+.p4-diff-meta {
+    background-color: var(--background-secondary);
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+/* ============================================
+   History View
+   ============================================ */
+
+.p4-history-list {
+    padding: 4px 0;
+}
+
+.p4-history-item {
+    padding: 12px;
+    border-bottom: 1px solid var(--background-modifier-border);
+    cursor: pointer;
+}
+
+.p4-history-item:hover {
+    background-color: var(--background-modifier-hover);
+}
+
+.p4-history-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+
+.p4-history-change {
+    font-weight: 600;
+    color: var(--text-accent);
+}
+
+.p4-history-user,
+.p4-history-date {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.p4-history-icon {
+    display: flex;
+    align-items: center;
+    opacity: 0.7;
+}
+
+.p4-history-description {
+    font-size: 13px;
+    color: var(--text-normal);
+}
+
+.p4-history-description p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.p4-history-files {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--background-modifier-border);
+}
+
+.p4-history-file {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.p4-history-file-icon {
+    display: flex;
+    align-items: center;
+}
+
+/* ============================================
+   Modals
+   ============================================ */
+
+.p4-submit-modal,
+.p4-changelist-modal,
+.p4-new-changelist-modal,
+.p4-checkout-modal,
+.p4-edit-changelist-modal {
+    padding: 16px;
+}
+
+.p4-submit-modal h2,
+.p4-changelist-modal h2,
+.p4-new-changelist-modal h2,
+.p4-checkout-modal h2,
+.p4-edit-changelist-modal h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.p4-checkout-message {
+    margin-bottom: 16px;
+    color: var(--text-normal);
+}
+
+.p4-checkout-buttons .setting-item {
+    border-top: none;
+    padding-top: 0;
+}
+
+.p4-changelist-description {
+    width: 100%;
+    min-height: 80px;
+    font-family: var(--font-text);
+}
+
+.p4-submit-description {
+    width: 100%;
+    min-height: 100px;
+    font-family: var(--font-text);
+}
+
+.p4-changelist-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.p4-changelist-item {
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.p4-changelist-item:last-child {
+    border-bottom: none;
+}
+
+/* ============================================
+   Settings
+   ============================================ */
+
+.p4-connection-info {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: var(--background-secondary);
+    border-radius: 6px;
+}
+
+.p4-info-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.p4-info-table td {
+    padding: 4px 8px;
+}
+
+.p4-info-label {
+    font-weight: 500;
+    color: var(--text-muted);
+    width: 80px;
+}
+
+.p4-info-value {
+    color: var(--text-normal);
+    font-family: var(--font-monospace);
+    font-size: 12px;
+}
+
+/* ============================================
+   File Decorators (Explorer & Tabs) - obsidian-git style
+   ============================================ */
+
+/* Base decorator styling */
+.p4-file-decorator,
+.p4-tab-decorator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Letter decorators (E, A, D, M, etc.) */
+.p4-decorator-letter {
+    font-size: 11px;
+    font-weight: 600;
+    width: 11px;
+    padding-left: var(--size-2-1);
+}
+
+/* Icon decorators for all file statuses */
+.p4-decorator-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: var(--size-2-1);
+}
+
+.p4-decorator-icon svg {
+    width: 12px;
+    height: 12px;
+}
+
+/* Status-specific colors */
+.p4-status-edit {
+    color: var(--color-blue);
+}
+
+.p4-status-add {
+    color: var(--color-green);
+}
+
+.p4-status-delete {
+    color: var(--color-red);
+}
+
+.p4-status-branch {
+    color: var(--color-cyan);
+}
+
+.p4-status-integrate {
+    color: var(--color-purple);
+}
+
+.p4-status-move {
+    color: var(--color-orange);
+}
+
+.p4-status-synced {
+    color: var(--text-faint);
+    opacity: 0.6;
+}
+
+.p4-status-locked {
+    color: var(--color-yellow);
+}
+
+/* File explorer specific styling */
+.nav-file-title .p4-file-decorator {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.nav-file-title {
+    position: relative;
+    padding-right: 24px;
+}
+
+/* Tab decorator styling */
+.p4-tab-decorator {
+    margin-left: 4px;
+}
+
+.p4-tab-decorator.p4-decorator-letter {
+    font-size: 10px;
+}
+
+.p4-tab-decorator.p4-decorator-icon svg {
+    width: 10px;
+    height: 10px;
+}
+
+/* Hover effect for file decorators */
+.nav-file-title:hover .p4-file-decorator {
+    opacity: 1;
+}
+
+
+/* ============================================
+   Inline Blame (GitLens style)
+   ============================================ */
+
+.p4-inline-blame {
+    display: inline-block;
+    margin-left: 2em;
+    padding: 0 8px;
+    font-size: 0.85em;
+    font-family: var(--font-monospace);
+    color: var(--text-faint);
+    opacity: 0.6;
+    white-space: nowrap;
+    cursor: default;
+    user-select: none;
+    transition: opacity 0.15s ease-in-out;
+}
+
+.p4-inline-blame:hover {
+    opacity: 1;
+    color: var(--text-muted);
+}
+
+
+/* ============================================
+   Merge View (Conflict Resolution)
+   ============================================ */
+
+.p4-merge-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.p4-merge-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--background-modifier-border);
+    background: var(--background-secondary);
+}
+
+.p4-merge-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    flex: 1;
+    min-width: 200px;
+}
+
+.p4-merge-icon {
+    display: flex;
+    color: var(--text-accent);
+}
+
+.p4-merge-quick-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.p4-merge-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    background: var(--background-modifier-hover);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.p4-merge-action-btn:hover {
+    background: var(--background-modifier-active-hover);
+    border-color: var(--text-accent);
+}
+
+.p4-merge-action-icon {
+    display: flex;
+    width: 14px;
+    height: 14px;
+}
+
+.p4-merge-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    gap: 2px;
+    background: var(--background-modifier-border);
+}
+
+.p4-merge-sources {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+}
+
+.p4-merge-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    background: var(--background-primary);
+}
+
+.p4-merge-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: var(--background-secondary);
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.p4-merge-panel-title {
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.p4-merge-use-btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--background-modifier-hover);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-muted);
+}
+
+.p4-merge-use-btn:hover {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border-color: var(--interactive-accent);
+}
+
+.p4-merge-panel-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.p4-merge-panel-content .cm-editor {
+    height: 100%;
+}
+
+.p4-merge-result {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    background: var(--background-primary);
+}
+
+.p4-merge-result-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.p4-merge-result-content .cm-editor {
+    height: 100%;
+}
+
+.p4-merge-save-btn {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+/* Conflict section in source control */
+.p4-conflicts-section {
+    margin-bottom: 1rem;
+}
+
+.p4-conflicts-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(var(--color-red-rgb), 0.1);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.p4-conflicts-header svg {
+    color: var(--color-red);
+}
+
+.p4-conflicts-count {
+    font-size: 0.85rem;
+    color: var(--color-red);
+    font-weight: 500;
+}
+
+.p4-conflict-file {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.p4-conflict-file:hover {
+    background: var(--background-modifier-hover);
+}
+
+.p4-conflict-file-icon {
+    color: var(--color-red);
+    display: flex;
+}
+
+.p4-conflict-file-name {
+    flex: 1;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.p4-conflict-resolve-btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    border: none;
+}
+
+.p4-conflict-resolve-btn:hover {
+    filter: brightness(1.1);
+}

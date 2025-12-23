@@ -1,90 +1,116 @@
-# Obsidian Sample Plugin
+# Obsidian P4
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+A Perforce (Helix Core) integration plugin for [Obsidian](https://obsidian.md), bringing version control features directly into your note-taking workflow.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+> **️Early Development:** This plugin is in early development and may be buggy. If you encounter issues, please [file an issue](../../issues) on GitHub. Pull requests are welcome!
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open modal (simple)" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+## Features
 
-## First time developing plugins?
+### File Operations
+- **Auto-checkout on edit** - Automatically checks out files when you start editing
+- **Auto-add new files** - Optionally add new files to Perforce automatically
+- **Context menu integration** - Right-click files or folders for P4 operations (Add, Check out, Revert, Delete)
+- **Folder operations** - Batch operations on entire folders
 
-Quick starting guide for new plugin devs:
+### Source Control View
+- **Sidebar panel** - View all pending changes organized by changelist
+- **File status decorators** - Visual indicators in the file tree showing P4 status (checked out, added, etc.)
+- **Changelist management** - Create, edit, and submit changelists
+- **Conflict resolution** - Built-in merge UI for resolving conflicts
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+### History & Blame
+- **File history** - View revision history for any file
+- **Diff view** - Compare file versions side-by-side
+- **Blame annotations** - See per-line author information in the editor gutter
 
-## Releasing new releases
+### Supported File Types
+- Markdown files (`.md`)
+- Canvas files (`.canvas`)
+- Other text-based files
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+## Requirements
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+- **Desktop only** - Linux and Windows are officially supported. macOS might work but is untested.
+- **Perforce CLI (p4)** - Must be installed and accessible in your system PATH
+- **Valid P4 workspace** - Your Obsidian vault must be within a Perforce workspace
+- **P4 environment** - `P4PORT`, `P4USER`, and `P4CLIENT` should be configured (via environment variables, `.p4config`, or plugin settings)
+- **No sandboxing** - Snap, Flatpak, and other sandboxed installations are not supported. The plugin requires direct access to the `p4` binary and your filesystem.
 
-## Adding your plugin to the community plugin list
+## Installation
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Manual Installation
 
-## How to use
+1. Download `main.js`, `manifest.json`, and `styles.css` from the latest release
+2. Create a folder named `obsidian-p4` in your vault's `.obsidian/plugins/` directory
+3. Copy the downloaded files into the folder
+4. Restart Obsidian
+5. Enable the plugin in **Settings → Community plugins**
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+## Configuration
 
-## Manually installing the plugin
+Open **Settings → Obsidian P4** to configure:
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+| Setting | Description |
+|---------|-------------|
+| P4 executable path | Path to `p4` command (default: `p4`) |
+| Auto checkout | Automatically check out files when editing |
+| Auto add | Automatically add new files to Perforce |
+| Show notifications | Display P4 operation notifications |
+| Enable file decorators | Show P4 status icons in file tree |
+| Enable blame | Show per-line author annotations |
 
-## Improve code quality with eslint
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- This project already has eslint preconfigured, you can invoke a check by running`npm run lint`
-- Together with a custom eslint [plugin](https://github.com/eslint-plugin) for Obsidan specific code guidelines.
-- A GitHub action is preconfigured to automatically lint every commit on all branches.
+## Usage
 
-## Funding URL
+### Commands
 
-You can include funding URLs where people who use your plugin can financially support it.
+Access via Command Palette (`Ctrl/Cmd + P`):
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+- `P4: Open source control view` - Open the P4 sidebar
+- `P4: Sync` - Get latest files from server
+- `P4: Add current file` - Add active file to Perforce
+- `P4: Check out current file` - Check out active file for editing
+- `P4: Revert current file` - Revert changes to active file
+- `P4: Show file history` - View revision history
+- `P4: Show blame` - Toggle blame annotations
+- `P4: Submit` - Submit pending changes
+- `P4: Login` - Re-authenticate with Perforce
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
+### Context Menu
+
+Right-click any file or folder in the file explorer to access P4 operations.
+
+### Status Bar
+
+The status bar shows:
+- Number of pending files
+- Current P4 operation status
+- Click to open source control view
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Build for development (watch mode)
+npm run dev
+
+# Build for production
+npm run build
 ```
 
-If you have multiple URLs, you can also do:
+## Acknowledgments
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+This plugin is heavily inspired by [Obsidian Git](https://github.com/Vinzent03/obsidian-git) by Vinzent03 - Git integration plugin for Obsidian. If you use Git instead of Perforce, check it out!
 
-## API Documentation
+## Contributing
 
-See https://docs.obsidian.md
+This plugin is in early development and contributions are welcome!
+
+- **Bug reports** - [Open an issue](../../issues) with steps to reproduce
+- **Feature requests** - [Open an issue](../../issues) describing the feature
+- **Pull requests** - Fork the repo, make your changes, and submit a PR
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
