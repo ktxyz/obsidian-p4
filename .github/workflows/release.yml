@@ -1,0 +1,58 @@
+name: Release
+
+on:
+    push:
+        tags:
+            - "v*.*.*"
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 25.x
+                  cache: "npm"
+
+            - name: Validate version
+              run: |
+                  TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+                  MANIFEST_VERSION=$(node -p "require('./manifest.json').version")
+                  echo "Tag version: $TAG_VERSION"
+                  echo "Manifest version: $MANIFEST_VERSION"
+                  if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
+                    echo "Error: Tag v$TAG_VERSION doesn't match manifest.json version $MANIFEST_VERSION"
+                    exit 1
+                  fi
+                  echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Build
+              run: npm run build
+
+            - name: Create ZIP package
+              run: |
+                  mkdir -p release
+                  cp main.js manifest.json styles.css release/
+                  cd release
+                  zip -r ../obsidian-p4-${{ env.TAG_VERSION }}.zip main.js manifest.json styles.css
+                  cd ..
+
+            - name: Create GitHub Release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: obsidian-p4-${{ env.TAG_VERSION }}.zip
+                  generate_release_notes: true
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
