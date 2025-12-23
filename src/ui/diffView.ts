@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, setIcon } from "obsidian";
+import { ItemView, WorkspaceLeaf, setIcon, TFile, type ViewStateResult } from "obsidian";
 import { MergeView } from "@codemirror/merge";
 import { EditorState } from "@codemirror/state";
 import { EditorView, lineNumbers, drawSelection, highlightActiveLine } from "@codemirror/view";
@@ -40,7 +40,7 @@ export class P4DiffView extends ItemView {
         return DIFF_VIEW_CONFIG.icon;
     }
 
-    async setState(state: DiffViewState, result: any): Promise<void> {
+    async setState(state: DiffViewState, result: ViewStateResult): Promise<void> {
         this.filePath = state.filePath || "";
         await this.loadDiff();
         await super.setState(state, result);
@@ -58,7 +58,7 @@ export class P4DiffView extends ItemView {
         if (this.filePath) {
             await this.loadDiff();
         } else {
-            this.renderEmpty(container as HTMLElement);
+            this.renderEmpty(container);
         }
     }
 
@@ -123,7 +123,7 @@ export class P4DiffView extends ItemView {
             attr: { "aria-label": "Refresh" }
         });
         setIcon(refreshBtn, "refresh-cw");
-        refreshBtn.addEventListener("click", () => this.loadDiff());
+        refreshBtn.addEventListener("click", () => { void this.loadDiff(); });
 
         const openBtn = actions.createEl("button", {
             cls: "p4-action-button",
@@ -132,8 +132,8 @@ export class P4DiffView extends ItemView {
         setIcon(openBtn, "file");
         openBtn.addEventListener("click", () => {
             const tFile = this.app.vault.getAbstractFileByPath(this.filePath);
-            if (tFile) {
-                this.app.workspace.getLeaf("tab").openFile(tFile as any);
+            if (tFile instanceof TFile) {
+                void this.app.workspace.getLeaf("tab").openFile(tFile);
             }
         });
 

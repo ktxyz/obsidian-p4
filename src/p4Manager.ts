@@ -1,5 +1,6 @@
-import { exec } from "child_process";
+import { exec, spawn } from "child_process";
 import { promisify } from "util";
+import { mkdir, rename } from "fs/promises";
 import { FileSystemAdapter, normalizePath } from "obsidian";
 import * as path from "path";
 import type ObsidianP4 from "./main";
@@ -99,7 +100,7 @@ export class P4Manager {
             timeout: 30000, // 30 second timeout to prevent freezing
         };
 
-        console.log("P4 command:", cmd);
+        console.debug("P4 command:", cmd);
 
         try {
             const { stdout, stderr } = await execAsync(cmd, options);
@@ -146,9 +147,10 @@ export class P4Manager {
         const lines = output.trim().split("\n").filter(line => line.trim());
         for (const line of lines) {
             try {
-                const parsed = JSON.parse(line);
+                const parsed: unknown = JSON.parse(line);
                 // Skip error objects if they're just "file(s) not opened" type messages
-                if (parsed.code === "error" && parsed.data) {
+                if (typeof parsed === "object" && parsed !== null && 
+                    "code" in parsed && parsed.code === "error" && "data" in parsed) {
                     continue;
                 }
                 results.push(parsed as T);
@@ -156,7 +158,7 @@ export class P4Manager {
                 // Skip non-JSON lines (like summary messages)
             }
         }
-        console.log("P4 JSON results:", args[0], results);
+        console.debug("P4 JSON results:", args[0], results);
         return results;
     }
 
@@ -241,7 +243,7 @@ export class P4Manager {
         const results = await this.runP4Json<P4InfoJson>(["info"]);
         const data = results[0] || {};
 
-        console.log("P4 info result:", data);
+        console.debug("P4 info result:", data);
 
         return {
             userName: data.userName || "",
@@ -270,7 +272,7 @@ export class P4Manager {
             // Get opened files - try without path restriction first (more reliable)
             // P4 returns all opened files for this client, we'll filter them later
             const results = await this.runP4Json<P4OpenedJson>(["opened"]);
-            console.log("P4 opened raw results:", results);
+            console.debug("P4 opened raw results:", results);
             
             // Filter to only files in the vault
             const filesInVault: P4FileStatus[] = [];
@@ -281,11 +283,11 @@ export class P4Manager {
             const clientName = info.clientName;
             const vaultPathNormalized = this.vaultPath.replace(/\\/g, "/").toLowerCase();
             
-            console.log("P4 opened: clientRoot =", clientRoot, "clientName =", clientName, "vaultPath =", this.vaultPath);
+            console.debug("P4 opened: clientRoot =", clientRoot, "clientName =", clientName, "vaultPath =", this.vaultPath);
             
             for (const item of results) {
                 const clientFile = item.clientFile || "";
-                console.log("P4 opened: clientFile =", clientFile);
+                console.debug("P4 opened: clientFile =", clientFile);
                 
                 // clientFile format is //clientName/path/to/file
                 // Convert to absolute path: clientRoot + path/to/file
@@ -303,12 +305,12 @@ export class P4Manager {
                     }
                 }
                 
-                console.log("P4 opened: absolutePath =", absolutePath);
+                console.debug("P4 opened: absolutePath =", absolutePath);
                 
                 // Check if it's in the vault
                 const absolutePathNormalized = absolutePath.toLowerCase();
                 if (!absolutePathNormalized.startsWith(vaultPathNormalized)) {
-                    console.log("P4 opened: skipping (not in vault):", absolutePath);
+                    console.debug("P4 opened: skipping (not in vault):", absolutePath);
                     continue;
                 }
                 
@@ -323,7 +325,7 @@ export class P4Manager {
                 
                 // Convert absolutePath to vault-relative path
                 const vaultRelativePath = this.toVaultPath(absolutePath);
-                console.log("P4 opened: vaultPath =", vaultRelativePath);
+                console.debug("P4 opened: vaultPath =", vaultRelativePath);
                 
                 filesInVault.push({
                     depotFile: item.depotFile || "",
@@ -517,18 +519,15 @@ export class P4Manager {
      * Rename a file on the filesystem (used to revert accidental renames)
      */
     async revertRename(currentPath: string, originalPath: string): Promise<void> {
-        const fs = require("fs").promises;
-        const path = require("path");
-        
         const currentAbsPath = this.toAbsolutePath(currentPath);
         const originalAbsPath = this.toAbsolutePath(originalPath);
         
         // Ensure parent directory exists
         const parentDir = path.dirname(originalAbsPath);
-        await fs.mkdir(parentDir, { recursive: true });
+        await mkdir(parentDir, { recursive: true });
         
         // Move file back
-        await fs.rename(currentAbsPath, originalAbsPath);
+        await rename(currentAbsPath, originalAbsPath);
     }
 
     /**
@@ -572,7 +571,6 @@ export class P4Manager {
         const newSpec = newLines.join("\n");
         
         // Submit the updated spec via stdin
-        const { spawn } = require("child_process") as typeof import("child_process");
         const p4Process = spawn(this.p4Path, ["change", "-i"], {
             cwd: this.vaultPath,
             env: this.getP4Env(),
@@ -604,7 +602,6 @@ export class P4Manager {
         // Create a new changelist spec
         const spec = `Change: new\n\nDescription:\n\t${description.replace(/\n/g, "\n\t")}\n`;
         
-        const { spawn } = require("child_process") as typeof import("child_process");
         const p4Process = spawn(this.p4Path, ["change", "-i"], {
             cwd: this.vaultPath,
             env: this.getP4Env(),
@@ -668,7 +665,7 @@ export class P4Manager {
             target = `"${vaultPathForP4}/..."`;
         }
         
-        console.log("P4 sync target:", target);
+        console.debug("P4 sync target:", target);
         const results = await this.runP4Json<P4SyncJson>(["sync", target]);
 
         const files: P4SyncedFile[] = results
@@ -749,7 +746,7 @@ export class P4Manager {
         let diffText = "";
         try {
             diffText = await this.runP4(["diff", `"${absPath}"`]);
-        } catch (error) {
+        } catch {
             // No differences
             diffText = "";
         }
@@ -854,7 +851,7 @@ export class P4Manager {
                 }
             }
         } catch (error) {
-            console.log("P4 have: Error getting synced files:", error);
+            console.debug("P4 have: Error getting synced files:", error);
             // Return empty set on error - non-critical
         }
 
@@ -871,7 +868,7 @@ export class P4Manager {
         // Quote the path since runP4 joins arguments with spaces and paths may contain spaces
         const output = await this.runP4(["annotate", "-u", "-c", `"${absPath}"`]);
         
-        console.log("P4 annotate raw output:", output.substring(0, 500));
+        console.debug("P4 annotate raw output:", output.substring(0, 500));
         
         const lines: P4BlameLine[] = [];
         // Handle Windows line endings (\r\n) by removing \r
@@ -891,12 +888,12 @@ export class P4Manager {
             // Example: 48: mord4r 2025/11/08  - pojedyncze, powtarzalne zadania
             // Use a more permissive regex that captures everything after the date
             // Date can use / or - as separator
-            const mainMatch = line.match(/^(\d+):\s*(\S+)\s+(\d{4}[\/\-]\d{2}[\/\-]\d{2})(.*)$/);
+            const mainMatch = line.match(/^(\d+):\s*(\S+)\s+(\d{4}[-/]\d{2}[-/]\d{2})(.*)$/);
             if (mainMatch && mainMatch[1] && mainMatch[2] && mainMatch[3]) {
                 lineNumber++;
                 // Content is everything after the date, trimmed
                 const content = (mainMatch[4] || "").replace(/^[\s:]+/, "").trim();
-                console.log("P4 annotate: matched line", lineNumber, "changelist:", mainMatch[1], "user:", mainMatch[2], "date:", mainMatch[3]);
+                console.debug("P4 annotate: matched line", lineNumber, "changelist:", mainMatch[1], "user:", mainMatch[2], "date:", mainMatch[3]);
                 lines.push({
                     lineNumber,
                     changelist: parseInt(mainMatch[1], 10),
@@ -908,7 +905,7 @@ export class P4Manager {
             }
             
             // Debug: log what we're trying to match
-            console.log("P4 annotate: trying to match:", JSON.stringify(line.substring(0, 60)));
+            console.debug("P4 annotate: trying to match:", JSON.stringify(line.substring(0, 60)));
             
             // Alternate format: changelist: user date: content (colon after date)
             // Example: 12345: john 2024/01/15: line content here
@@ -980,10 +977,10 @@ export class P4Manager {
             }
             
             // Unmatched lines don't increment lineNumber - they're not content lines
-            console.log("P4 annotate: unmatched line format:", line);
+            console.debug("P4 annotate: unmatched line format:", line);
         }
 
-        console.log("P4 annotate: parsed", lines.length, "lines");
+        console.debug("P4 annotate: parsed", lines.length, "lines");
         
         return {
             filePath,
@@ -1247,7 +1244,7 @@ export class P4Manager {
                 return [];
             }
             // Don't throw on other errors, just return empty (conflicts are optional)
-            console.log("P4 getConflicts error:", error);
+            console.debug("P4 getConflicts error:", error);
         }
 
         return conflicts;

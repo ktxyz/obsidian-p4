@@ -73,7 +73,7 @@ export class P4FileDecorators {
     start(): void {
         // Initial decoration (delayed to avoid blocking)
         this.updateFileStatus(this.plugin.getCachedOpenedFiles());
-        this.loadSyncedFiles().then(() => {
+        void this.loadSyncedFiles().then(() => {
             this.decorateAll();
         });
 
@@ -102,14 +102,14 @@ export class P4FileDecorators {
         // Listen for refresh events to reload synced files
         this.plugin.registerEvent(
             this.plugin.app.workspace.on("obsidian-p4:refresh", () => {
-                this.loadSyncedFiles().then(() => this.scheduleDecorate());
+                void this.loadSyncedFiles().then(() => this.scheduleDecorate());
             })
         );
         
         // Listen for immediate refresh events
         this.plugin.registerEvent(
             this.plugin.app.workspace.on("obsidian-p4:refresh-now", () => {
-                this.loadSyncedFiles().then(() => this.scheduleDecorate());
+                void this.loadSyncedFiles().then(() => this.scheduleDecorate());
             })
         );
     }
@@ -122,7 +122,7 @@ export class P4FileDecorators {
         
         try {
             this.syncedFiles = await this.plugin.p4Manager.getHaveFiles();
-            console.log("P4 decorator: loaded", this.syncedFiles.size, "synced files");
+            console.debug("P4 decorator: loaded", this.syncedFiles.size, "synced files");
         } catch (error) {
             console.error("P4 decorator: failed to load synced files:", error);
         }

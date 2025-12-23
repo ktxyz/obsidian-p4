@@ -55,7 +55,7 @@ export class DeleteFileModal extends Modal {
 
     onClose(): void {
         if (this.svelteComponent) {
-            unmount(this.svelteComponent);
+            void unmount(this.svelteComponent);
             this.svelteComponent = null;
         }
         

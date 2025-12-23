@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, setIcon } from "obsidian";
+import { ItemView, WorkspaceLeaf, setIcon, type ViewStateResult } from "obsidian";
 import { EditorState } from "@codemirror/state";
 import { EditorView, lineNumbers, drawSelection, highlightActiveLine } from "@codemirror/view";
 import type ObsidianP4 from "../main";
@@ -42,7 +42,7 @@ export class P4MergeView extends ItemView {
         return MERGE_VIEW_CONFIG.icon;
     }
 
-    async setState(state: MergeViewState, result: any): Promise<void> {
+    async setState(state: MergeViewState, result: ViewStateResult): Promise<void> {
         this.filePath = state.filePath || "";
         await this.loadMerge();
         await super.setState(state, result);
@@ -126,16 +126,16 @@ export class P4MergeView extends ItemView {
         // Quick action buttons
         const quickActions = header.createDiv({ cls: "p4-merge-quick-actions" });
 
-        const acceptYoursBtn = this.createActionButton(quickActions, "Accept yours", "user", async () => {
-            await this.resolveWith("accept-yours");
+        this.createActionButton(quickActions, "Accept yours", "user", () => {
+            void this.resolveWith("accept-yours");
         });
 
-        const acceptTheirsBtn = this.createActionButton(quickActions, "Accept theirs", "cloud", async () => {
-            await this.resolveWith("accept-theirs");
+        this.createActionButton(quickActions, "Accept theirs", "cloud", () => {
+            void this.resolveWith("accept-theirs");
         });
 
-        const autoMergeBtn = this.createActionButton(quickActions, "Auto-merge", "wand", async () => {
-            await this.resolveWith("accept-safe-merge");
+        this.createActionButton(quickActions, "Auto-merge", "wand", () => {
+            void this.resolveWith("accept-safe-merge");
         });
 
         // Two-column layout: left shows theirs/yours, right shows result
@@ -169,9 +169,9 @@ export class P4MergeView extends ItemView {
         
         const saveResolveBtn = resultHeader.createEl("button", { 
             cls: "mod-cta p4-merge-save-btn", 
-            text: "Save & Resolve" 
+            text: "Save & resolve" 
         });
-        saveResolveBtn.addEventListener("click", () => this.saveAndResolve());
+        saveResolveBtn.addEventListener("click", () => { void this.saveAndResolve(); });
 
         const resultContent = rightSide.createDiv({ cls: "p4-merge-result-content" });
         

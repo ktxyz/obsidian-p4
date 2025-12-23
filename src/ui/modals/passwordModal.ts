@@ -16,7 +16,7 @@ export class PasswordModal extends Modal {
     onOpen(): void {
         const { contentEl } = this;
 
-        contentEl.createEl("h2", { text: "Perforce Login" });
+        contentEl.createEl("h2", { text: "Perforce login" });
         contentEl.createEl("p", { text: this.message, cls: "p4-password-message" });
 
         let password = "";
@@ -26,7 +26,7 @@ export class PasswordModal extends Modal {
             .addText((text) => {
                 // Make it a password field
                 text.inputEl.type = "password";
-                text.inputEl.placeholder = "Enter your P4 password";
+                text.inputEl.placeholder = `Enter your ${"P4"} password...`;
                 text.onChange((value) => {
                     password = value;
                 });

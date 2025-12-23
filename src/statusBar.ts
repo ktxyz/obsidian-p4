@@ -21,9 +21,8 @@ export class P4StatusBar {
         this.statusBarEl.addEventListener("click", () => this.onClick());
         
         // Create spinner element
-        this.spinnerEl = this.statusBarEl.createSpan({ cls: "p4-status-spinner" });
+        this.spinnerEl = this.statusBarEl.createSpan({ cls: "p4-status-spinner p4-hidden" });
         setIcon(this.spinnerEl, "loader-2");
-        this.spinnerEl.style.display = "none";
         
         // Create text element
         this.textEl = this.statusBarEl.createSpan({ cls: "p4-status-text" });
@@ -109,7 +108,6 @@ export class P4StatusBar {
     displayMessage(message: string, timeout: number = 4000): void {
         if (!this.textEl) return;
         
-        const originalText = this.textEl.getText();
         this.textEl.setText(message);
 
         setTimeout(() => {

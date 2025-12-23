@@ -43,17 +43,20 @@ export class P4SourceControlView extends ItemView {
 
         // Register for status changes
         this.registerEvent(
-            this.app.workspace.on("obsidian-p4:status-changed", async (files: P4FileStatus[]) => {
+            this.app.workspace.on("obsidian-p4:status-changed", (files: P4FileStatus[]) => {
                 this.openedFiles = files;
                 // Also refresh changelists to keep everything in sync
-                try {
-                    this.changelists = await this.plugin.p4Manager.getPendingChangelists();
-                    this.error = null;
-                } catch (err) {
-                    console.error("Failed to get changelists:", err);
-                    this.error = (err as Error).message;
-                }
-                this.updateSvelte(container);
+                void this.plugin.p4Manager.getPendingChangelists()
+                    .then((changelists) => {
+                        this.changelists = changelists;
+                        this.error = null;
+                        this.updateSvelte(container);
+                    })
+                    .catch((err: Error) => {
+                        console.error("Failed to get changelists:", err);
+                        this.error = err.message;
+                        this.updateSvelte(container);
+                    });
             })
         );
 
@@ -63,14 +66,14 @@ export class P4SourceControlView extends ItemView {
 
     async onClose(): Promise<void> {
         if (this.svelteComponent) {
-            unmount(this.svelteComponent);
+            void unmount(this.svelteComponent);
             this.svelteComponent = null;
         }
     }
 
     private mountSvelte(container: HTMLElement): void {
         if (this.svelteComponent) {
-            unmount(this.svelteComponent);
+            void unmount(this.svelteComponent);
         }
 
         this.svelteComponent = mount(SourceControlViewComponent, {

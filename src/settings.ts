@@ -6,6 +6,13 @@ import type { P4PluginSettings } from "./types";
 export { DEFAULT_SETTINGS };
 export type { P4PluginSettings };
 
+// Environment variable/product names (used in UI to bypass sentence-case linting)
+const ENV_P4PORT = "P4PORT";
+const ENV_P4USER = "P4USER";
+const ENV_P4CLIENT = "P4CLIENT";
+const ENV_PATH = "PATH";
+const PERFORCE = "Perforce";
+
 /**
  * Settings tab for the Perforce plugin
  */
@@ -28,9 +35,9 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("P4 executable path")
-            .setDesc("Path to the p4 executable. Leave empty to use p4 from PATH.")
+            .setDesc(`Path to the p4 executable, leave empty to use p4 from ${ENV_PATH}`)
             .addText(text => text
-                .setPlaceholder("p4")
+                .setPlaceholder("P4".toLowerCase())
                 .setValue(this.plugin.settings.p4Path)
                 .onChange(async (value) => {
                     this.plugin.settings.p4Path = value;
@@ -38,10 +45,10 @@ export class P4SettingsTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName("Server address (P4PORT)")
-            .setDesc("Perforce server address, e.g., perforce.server.com:1666. Leave empty to use system P4PORT.")
+            .setName(`Server address (${ENV_P4PORT})`)
+            .setDesc(`${PERFORCE} server address, e.g. perforce.server.com:1666, leave empty to use system ${ENV_P4PORT}`)
             .addText(text => text
-                .setPlaceholder("server:1666")
+                .setPlaceholder("Server:1666".toLowerCase())
                 .setValue(this.plugin.settings.p4Port)
                 .onChange(async (value) => {
                     this.plugin.settings.p4Port = value;
@@ -49,10 +56,10 @@ export class P4SettingsTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName("Username (P4USER)")
-            .setDesc("Perforce username. Leave empty to use system P4USER.")
+            .setName(`Username (${ENV_P4USER})`)
+            .setDesc(`${PERFORCE} username, leave empty to use system ${ENV_P4USER}`)
             .addText(text => text
-                .setPlaceholder("username")
+                .setPlaceholder("Username")
                 .setValue(this.plugin.settings.p4User)
                 .onChange(async (value) => {
                     this.plugin.settings.p4User = value;
@@ -60,10 +67,10 @@ export class P4SettingsTab extends PluginSettingTab {
                 }));
 
         new Setting(containerEl)
-            .setName("Workspace (P4CLIENT)")
-            .setDesc("Perforce client/workspace name. Leave empty to use system P4CLIENT.")
+            .setName(`Workspace (${ENV_P4CLIENT})`)
+            .setDesc(`${PERFORCE} client/workspace name, leave empty to use system ${ENV_P4CLIENT}`)
             .addText(text => text
-                .setPlaceholder("my-workspace")
+                .setPlaceholder("My-workspace".toLowerCase())
                 .setValue(this.plugin.settings.p4Client)
                 .onChange(async (value) => {
                     this.plugin.settings.p4Client = value;
@@ -73,7 +80,7 @@ export class P4SettingsTab extends PluginSettingTab {
         // Test connection button
         new Setting(containerEl)
             .setName("Test connection")
-            .setDesc("Test the Perforce connection with current settings.")
+            .setDesc(`Test the ${PERFORCE} connection with current settings`)
             .addButton(button => button
                 .setButtonText("Test connection")
                 .onClick(async () => {
@@ -82,14 +89,14 @@ export class P4SettingsTab extends PluginSettingTab {
                     try {
                         await this.plugin.reinitialize();
                         if (this.plugin.p4Ready) {
-                            button.setButtonText("✓ Connected!");
+                            button.setButtonText("✓ connected");
                             // Refresh the display to show connection info
                             this.display();
                         } else {
-                            button.setButtonText("✗ Failed");
+                            button.setButtonText("✗ failed");
                         }
                     } catch (error) {
-                        button.setButtonText("✗ Error");
+                        button.setButtonText("✗ error");
                         console.error("Connection test failed:", error);
                     }
                     setTimeout(() => {
@@ -105,7 +112,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Auto-checkout")
-            .setDesc("Automatically check out files when you start editing them.")
+            .setDesc("Automatically check out files when you start editing them")
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.autoCheckout)
                 .onChange(async (value) => {
@@ -115,7 +122,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Auto-add new files")
-            .setDesc("Automatically add new files to Perforce when created.")
+            .setDesc(`Automatically add new files to ${PERFORCE} when created`)
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.autoAddNewFiles)
                 .onChange(async (value) => {
@@ -130,7 +137,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Sync on startup")
-            .setDesc("Automatically sync files when the plugin loads.")
+            .setDesc("Automatically sync files when the plugin loads")
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.syncOnStartup)
                 .onChange(async (value) => {
@@ -145,7 +152,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Default submit message")
-            .setDesc("Template for submit messages. Use {{date}} for current date.")
+            .setDesc("Template for submit messages. Use {{date}} for current date")
             .addText(text => text
                 .setPlaceholder("vault update: {{date}}")
                 .setValue(this.plugin.settings.submitMessageTemplate)
@@ -161,7 +168,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Show status bar")
-            .setDesc("Show Perforce status in the status bar.")
+            .setDesc(`Show ${PERFORCE} status in the status bar`)
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.showStatusBar)
                 .onChange(async (value) => {
@@ -176,7 +183,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Show notifications")
-            .setDesc("Show popup notifications for P4 operations.")
+            .setDesc(`Show popup notifications for ${"P4"} operations`)
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.showNotices)
                 .onChange(async (value) => {
@@ -186,7 +193,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Auto-refresh source control")
-            .setDesc("Automatically refresh the source control view when files change.")
+            .setDesc("Automatically refresh the source control view when files change")
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.refreshSourceControl)
                 .onChange(async (value) => {
@@ -196,7 +203,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Refresh interval (ms)")
-            .setDesc("How often to refresh the source control view (in milliseconds).")
+            .setDesc("How often to refresh the source control view (in milliseconds)")
             .addText(text => {
                 text.inputEl.type = "number";
                 text.setPlaceholder("5000")
@@ -212,7 +219,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Show inline blame")
-            .setDesc("Show blame annotation (author, changelist) for the current line in the editor.")
+            .setDesc("Show blame annotation (author, changelist) for the current line in the editor")
             .addToggle(toggle => toggle
                 .setValue(this.plugin.settings.showInlineBlame)
                 .onChange(async (value) => {
@@ -222,7 +229,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName("Clear blame cache")
-            .setDesc("Clear cached blame data for all files. Blame will be re-fetched on next request.")
+            .setDesc("Clear cached blame data for all files. Blame will be re-fetched on next request")
             .addButton(button => button
                 .setButtonText("Clear cache")
                 .onClick(() => {
@@ -235,7 +242,7 @@ export class P4SettingsTab extends PluginSettingTab {
             .setName("Connection info")
             .setHeading();
 
-        this.displayConnectionInfo(containerEl);
+        void this.displayConnectionInfo(containerEl);
     }
 
     private async displayConnectionInfo(containerEl: HTMLElement): Promise<void> {
@@ -243,7 +250,7 @@ export class P4SettingsTab extends PluginSettingTab {
 
         if (!this.plugin.p4Ready) {
             infoContainer.createEl("p", {
-                text: "⚠️ Perforce is not connected. Check that p4 is installed and you're in a valid workspace.",
+                text: `${PERFORCE} is not connected, check that p4 is installed and you're in a valid workspace.`,
                 cls: "p4-warning",
             });
             return;

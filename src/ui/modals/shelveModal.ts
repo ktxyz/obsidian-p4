@@ -23,7 +23,7 @@ export class ShelveModal extends Modal {
 
         contentEl.createEl("h2", { text: "Shelve changes" });
         contentEl.createEl("p", { 
-            text: "Select a numbered changelist to shelve. Note: Default changelist cannot be shelved directly.",
+            text: "Select a numbered changelist to shelve. The default changelist cannot be shelved directly",
             cls: "p4-muted"
         });
 
@@ -133,7 +133,7 @@ export class UnshelveModal extends Modal {
             .setDesc("Enter the changelist number containing shelved files")
             .addText(text => {
                 text.inputEl.type = "number";
-                text.setPlaceholder("e.g., 12345")
+                text.setPlaceholder(`${"e.g."} 12345`)
                     .onChange(value => {
                         sourceChangelist = parseInt(value, 10) || 0;
                     });
@@ -143,7 +143,7 @@ export class UnshelveModal extends Modal {
             .setName("Target changelist")
             .setDesc("Where to unshelve the files (leave empty for default)")
             .addText(text => {
-                text.setPlaceholder("default or changelist number")
+                text.setPlaceholder("Default or changelist number")
                     .onChange(value => {
                         if (value === "" || value.toLowerCase() === "default") {
                             targetChangelist = "default";

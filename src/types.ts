@@ -1,4 +1,4 @@
-import type { Menu, WorkspaceLeaf } from "obsidian";
+import type { EventRef, Menu, WorkspaceLeaf } from "obsidian";
 
 /**
  * P4 file action types (from p4 opened)

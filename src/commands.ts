@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { Notice } from "obsidian";
 import type ObsidianP4 from "./main";
 import { SOURCE_CONTROL_VIEW_CONFIG, HISTORY_VIEW_CONFIG } from "./constants";
 import { SubmitModal } from "./ui/modals/submitModal";
@@ -175,7 +175,7 @@ export function registerCommands(plugin: ObsidianP4): void {
     // Revert all files
     plugin.addCommand({
         id: "p4-revert-all",
-        name: "CAUTION: Revert all changes",
+        name: "Revert all changes (caution)",
         callback: async () => {
             if (!plugin.p4Ready) {
                 new Notice("Perforce is not connected");
@@ -391,7 +391,7 @@ export function registerCommands(plugin: ObsidianP4): void {
     // Resolve conflict: Accept yours
     plugin.addCommand({
         id: "p4-resolve-yours",
-        name: "Resolve conflict: Accept yours (keep local)",
+        name: "Resolve conflict: accept yours (keep local)",
         checkCallback: (checking) => {
             const file = app.workspace.getActiveFile();
             if (checking) {
@@ -413,7 +413,7 @@ export function registerCommands(plugin: ObsidianP4): void {
     // Resolve conflict: Accept theirs
     plugin.addCommand({
         id: "p4-resolve-theirs",
-        name: "Resolve conflict: Accept theirs (use depot)",
+        name: "Resolve conflict: accept theirs (use depot)",
         checkCallback: (checking) => {
             const file = app.workspace.getActiveFile();
             if (checking) {
@@ -466,7 +466,7 @@ export function registerCommands(plugin: ObsidianP4): void {
     // P4 Login command
     plugin.addCommand({
         id: "p4-login",
-        name: "Login to Perforce",
+        name: "Log in",
         callback: async () => {
             await plugin.promptForLogin();
         },

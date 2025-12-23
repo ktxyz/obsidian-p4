@@ -47,7 +47,7 @@ export class P4HistoryView extends ItemView {
             attr: { "aria-label": "Refresh" } 
         });
         setIcon(refreshBtn, "refresh-cw");
-        refreshBtn.addEventListener("click", () => this.refresh());
+        refreshBtn.addEventListener("click", () => { void this.refresh(); });
 
         // Content container
         this.contentContainer = container.createDiv({ cls: "p4-view-content" });
@@ -126,30 +126,31 @@ export class P4HistoryView extends ItemView {
         desc.createEl("p", { text: entry.description || "(no description)" });
 
         // Expandable files section (lazy load)
-        item.addEventListener("click", async () => {
+        item.addEventListener("click", () => {
             const existing = item.querySelector(".p4-history-files");
             if (existing) {
                 existing.remove();
                 return;
             }
 
-            try {
-                const files = await this.plugin.p4Manager.getChangelistFiles(entry.change);
-                const filesContainer = item.createDiv({ cls: "p4-history-files" });
-                
-                if (files.length === 0) {
-                    filesContainer.createEl("p", { text: "No files", cls: "p4-muted" });
-                } else {
-                    for (const file of files) {
-                        const fileItem = filesContainer.createDiv({ cls: "p4-history-file" });
-                        const icon = fileItem.createSpan({ cls: "p4-history-file-icon" });
-                        setIcon(icon, this.getActionIcon(file.action));
-                        fileItem.createSpan({ text: file.depotFile });
+            void this.plugin.p4Manager.getChangelistFiles(entry.change)
+                .then((files) => {
+                    const filesContainer = item.createDiv({ cls: "p4-history-files" });
+                    
+                    if (files.length === 0) {
+                        filesContainer.createEl("p", { text: "No files", cls: "p4-muted" });
+                    } else {
+                        for (const file of files) {
+                            const fileItem = filesContainer.createDiv({ cls: "p4-history-file" });
+                            const icon = fileItem.createSpan({ cls: "p4-history-file-icon" });
+                            setIcon(icon, this.getActionIcon(file.action));
+                            fileItem.createSpan({ text: file.depotFile });
+                        }
                     }
-                }
-            } catch (error) {
-                console.error("Error loading changelist files:", error);
-            }
+                })
+                .catch((error: Error) => {
+                    console.error("Error loading changelist files:", error);
+                });
         });
     }
 

@@ -5,7 +5,6 @@ import {
     Plugin,
     TFile,
     TFolder,
-    WorkspaceLeaf,
     type Debouncer,
 } from "obsidian";
 import { P4Manager } from "./p4Manager";
@@ -63,7 +62,7 @@ export default class ObsidianP4 extends Plugin {
     public isResolvingMerge: boolean = false;
 
     async onload(): Promise<void> {
-        console.log("Loading Obsidian P4 plugin");
+        console.debug("Loading Obsidian P4 plugin");
 
 		await this.loadSettings();
 
@@ -117,7 +116,7 @@ export default class ObsidianP4 extends Plugin {
         // Add ribbon icon
         this.addRibbonIcon(
             SOURCE_CONTROL_VIEW_CONFIG.icon,
-            "Open P4 source control",
+            "Open p4 source control view",
             async () => {
                 await this.openSourceControlView();
             }
@@ -133,7 +132,7 @@ export default class ObsidianP4 extends Plugin {
     }
 
     onunload(): void {
-        console.log("Unloading Obsidian P4 plugin");
+        console.debug("Unloading Obsidian P4 plugin");
         this.statusBar?.remove();
         this.fileDecorators?.stop();
         this.autoCheckoutDebounce.forEach((timeout) => clearTimeout(timeout));
@@ -152,9 +151,9 @@ export default class ObsidianP4 extends Plugin {
                 this.displayError("p4 command not found. Please install the Perforce CLI.");
                 break;
             case "not-in-workspace":
-                new Notice("Not in a Perforce workspace. Some features may be unavailable.", 5000);
+                new Notice(`Not in a ${"Perforce"} workspace, some features may be unavailable.`, 5000);
                 break;
-            case "not-logged-in":
+            case "not-logged-in": {
                 // Prompt user to log in
                 const loggedIn = await this.promptForLogin("Your Perforce session has expired or you are not logged in.");
                 if (loggedIn) {
@@ -162,6 +161,7 @@ export default class ObsidianP4 extends Plugin {
                     return;
                 }
                 break;
+            }
             case "valid":
                 // Populate caches BEFORE setting p4Ready to prevent race conditions
                 // where file operations happen before caches are populated
@@ -211,13 +211,14 @@ export default class ObsidianP4 extends Plugin {
             case "not-in-workspace":
                 this.displayError("Not in a Perforce workspace. Check your P4CLIENT setting.");
                 break;
-            case "not-logged-in":
+            case "not-logged-in": {
                 // Prompt user to log in
                 const loggedInReinit = await this.promptForLogin("Your Perforce session has expired.");
                 if (loggedInReinit) {
                     return; // Successfully logged in
                 }
                 break;
+            }
             case "valid":
                 this.p4Ready = true;
                 this.displayMessage("Connected to Perforce!");
@@ -243,20 +244,20 @@ export default class ObsidianP4 extends Plugin {
         // Immediate refresh event (for user-initiated actions)
         this.registerEvent(
             this.app.workspace.on("obsidian-p4:refresh-now", () => {
-                this.refresh();
+                void this.refresh();
             })
         );
 
         // Auto-checkout on editor change (BEFORE save, to handle read-only files)
         this.registerEvent(
-            this.app.workspace.on("editor-change", (editor, info) => {
+            this.app.workspace.on("editor-change", (_editor, info) => {
                 if (!this.settings.autoCheckout || !this.p4Ready) return;
                 
                 // Get the file from the view
                 const view = info instanceof MarkdownView ? info : null;
                 const file = view?.file;
                 if (file instanceof TFile) {
-                    this.handleAutoCheckout(file);
+                    void this.handleAutoCheckout(file);
                 }
             })
         );
@@ -267,11 +268,11 @@ export default class ObsidianP4 extends Plugin {
                 if (!this.p4Ready || !file) return;
                 
                 // Check if file is in depot but not checked out
-                this.checkFileStatusOnOpen(file);
+                void this.checkFileStatusOnOpen(file);
                 
                 // Load blame data for the file (if enabled)
                 if (this.settings.showInlineBlame) {
-                    this.loadBlameForActiveFile(file.path);
+                    void this.loadBlameForActiveFile(file.path);
                 }
             })
         );
@@ -280,7 +281,7 @@ export default class ObsidianP4 extends Plugin {
         this.registerEvent(
             this.app.workspace.on("layout-change", () => {
                 if (!this.p4Ready) return;
-                this.interceptModeSwitch();
+                void this.interceptModeSwitch();
             })
         );
 
@@ -289,7 +290,7 @@ export default class ObsidianP4 extends Plugin {
             this.app.vault.on("create", (file) => {
                 if (file instanceof TFile && this.settings.autoAddNewFiles && this.p4Ready) {
                     // Debounce to avoid rapid-fire adds
-                    this.handleAutoAdd(file);
+                    void this.handleAutoAdd(file);
                 }
             })
         );
@@ -298,7 +299,7 @@ export default class ObsidianP4 extends Plugin {
         this.registerEvent(
             this.app.vault.on("delete", (file) => {
                 if (file instanceof TFile && this.p4Ready) {
-                    this.handleFileDelete(file.path);
+                    void this.handleFileDelete(file.path);
                 }
             })
         );
@@ -307,7 +308,7 @@ export default class ObsidianP4 extends Plugin {
         this.registerEvent(
             this.app.vault.on("modify", (file) => {
                 if (file instanceof TFile && this.p4Ready) {
-                    this.handleFileModify(file);
+                    void this.handleFileModify(file);
                 }
             })
         );
@@ -316,7 +317,7 @@ export default class ObsidianP4 extends Plugin {
         this.registerEvent(
             this.app.vault.on("rename", (file, oldPath) => {
                 if (file instanceof TFile && this.p4Ready) {
-                    this.handleFileRename(file, oldPath);
+                    void this.handleFileRename(file, oldPath);
                 }
             })
         );
@@ -336,7 +337,7 @@ export default class ObsidianP4 extends Plugin {
                 if (!(file instanceof TFile)) return;
 
                 menu.addItem((item) => {
-                    item.setTitle("P4: Add")
+                    item.setTitle("P4: add")
                         .setIcon("plus-circle")
                         .onClick(() => {
                             this.p4Manager.add(file.path)
@@ -349,7 +350,7 @@ export default class ObsidianP4 extends Plugin {
                 });
 
                 menu.addItem((item) => {
-                    item.setTitle("P4: Check out")
+                    item.setTitle("P4: check out")
                         .setIcon("edit")
                         .onClick(() => {
                             this.p4Manager.edit(file.path)
@@ -362,7 +363,7 @@ export default class ObsidianP4 extends Plugin {
                 });
 
                 menu.addItem((item) => {
-                    item.setTitle("P4: Revert")
+                    item.setTitle("P4: revert")
                         .setIcon("rotate-ccw")
                         .onClick(() => {
                             this.p4Manager.revert(file.path)
@@ -375,7 +376,7 @@ export default class ObsidianP4 extends Plugin {
                 });
 
                 menu.addItem((item) => {
-                    item.setTitle("P4: Show diff")
+                    item.setTitle("P4: show diff")
                         .setIcon("file-diff")
                         .onClick(() => {
                             this.openDiffView(file.path)
@@ -384,7 +385,7 @@ export default class ObsidianP4 extends Plugin {
                 });
 
                 menu.addItem((item) => {
-                    item.setTitle("P4: Rename...")
+                    item.setTitle("P4: rename...")
                         .setIcon("pencil")
                         .onClick(async () => {
                             await this.promptAndRenameFile(file);
@@ -399,7 +400,7 @@ export default class ObsidianP4 extends Plugin {
      */
     private addFolderMenuItems(menu: import("obsidian").Menu, folder: TFolder): void {
         menu.addItem((item) => {
-            item.setTitle("P4: Add folder")
+            item.setTitle("P4: add folder")
                 .setIcon("folder-plus")
                 .onClick(() => {
                     this.p4Manager.addFolder(folder.path)
@@ -412,7 +413,7 @@ export default class ObsidianP4 extends Plugin {
         });
 
         menu.addItem((item) => {
-            item.setTitle("P4: Check out folder")
+            item.setTitle("P4: check out folder")
                 .setIcon("folder-edit")
                 .onClick(() => {
                     this.p4Manager.editFolder(folder.path)
@@ -425,7 +426,7 @@ export default class ObsidianP4 extends Plugin {
         });
 
         menu.addItem((item) => {
-            item.setTitle("P4: Delete folder")
+            item.setTitle("P4: delete folder")
                 .setIcon("folder-minus")
                 .onClick(() => {
                     this.p4Manager.deleteFolder(folder.path)
@@ -438,7 +439,7 @@ export default class ObsidianP4 extends Plugin {
         });
 
         menu.addItem((item) => {
-            item.setTitle("P4: Revert folder")
+            item.setTitle("P4: revert folder")
                 .setIcon("folder-x")
                 .onClick(() => {
                     this.p4Manager.revertFolder(folder.path)
@@ -520,7 +521,7 @@ export default class ObsidianP4 extends Plugin {
         }, 5000)); // Prevent re-processing for 5 seconds
         
         // Run checkout check immediately
-        this.doAutoCheckout(file);
+        void this.doAutoCheckout(file);
     }
 
     /**
@@ -538,9 +539,9 @@ export default class ObsidianP4 extends Plugin {
         }
         
         try {
-            console.log("P4 auto-checkout: checking", file.path);
+            console.debug("P4 auto-checkout: checking", file.path);
             const opened = await this.p4Manager.isFileOpened(file.path);
-            console.log("P4 auto-checkout: isOpened =", opened);
+            console.debug("P4 auto-checkout: isOpened =", opened);
             
             if (!opened) {
                 // Show modal to ask user if they want to check out
@@ -548,7 +549,7 @@ export default class ObsidianP4 extends Plugin {
             }
         } catch (error) {
             // File might not be in depot - that's okay
-            console.log("P4 auto-checkout error:", error);
+            console.debug("P4 auto-checkout error:", error);
         }
     }
 
@@ -591,7 +592,7 @@ export default class ObsidianP4 extends Plugin {
             const opened = await this.p4Manager.isFileOpened(file.path);
             if (!opened) {
                 // File is in depot but not checked out - force reading mode
-                console.log("P4: File", file.path, "is not checked out (read-only)");
+                console.debug("P4: File", file.path, "is not checked out (read-only)");
                 this.forceReadingMode();
                 
                 // Clear the once-skip flag if set (they opened it again)
@@ -615,7 +616,7 @@ export default class ObsidianP4 extends Plugin {
             const state = view.getState();
             if (state.mode !== "preview") {
                 state.mode = "preview";
-                view.setState(state, { history: false });
+                void view.setState(state, { history: false });
             }
         }
     }
@@ -672,7 +673,7 @@ export default class ObsidianP4 extends Plugin {
             const state = view.getState();
             if (state.mode !== "source") {
                 state.mode = "source";
-                view.setState(state, { history: false });
+                void view.setState(state, { history: false });
             }
         }
     }
@@ -751,36 +752,36 @@ export default class ObsidianP4 extends Plugin {
      */
     async loadBlame(filePath: string): Promise<void> {
         if (!this.p4Ready) {
-            console.log("P4 Blame: Not ready");
+            console.debug("P4 Blame: Not ready");
             return;
         }
 
         if (!this.settings.showInlineBlame) {
-            console.log("P4 Blame: Disabled in settings");
+            console.debug("P4 Blame: Disabled in settings");
             return;
         }
 
         // Skip blame for non-text files (binary files can't be annotated)
         if (!isTextFile(filePath)) {
-            console.log("P4 Blame: Skipping non-text file", filePath);
+            console.debug("P4 Blame: Skipping non-text file", filePath);
             return;
         }
 
         try {
-            console.log("P4 Blame: Loading blame for", filePath);
+            console.debug("P4 Blame: Loading blame for", filePath);
             const blameData = await this.blameProvider.getBlame(filePath);
             
             if (!blameData) {
-                console.log("P4 Blame: No blame data returned");
+                console.debug("P4 Blame: No blame data returned");
                 return;
             }
             
-            console.log("P4 Blame: Got", blameData.lines.length, "lines");
+            console.debug("P4 Blame: Got", blameData.lines.length, "lines");
 
             // Find the active editor and update its blame data
             const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
             if (!activeView || activeView.file?.path !== filePath) {
-                console.log("P4 Blame: Active view doesn't match file");
+                console.debug("P4 Blame: Active view doesn't match file");
                 return;
             }
 
@@ -789,11 +790,11 @@ export default class ObsidianP4 extends Plugin {
             const editorView = activeView.editor?.cm as EditorView | undefined;
             
             if (!editorView) {
-                console.log("P4 Blame: Could not get CodeMirror EditorView");
+                console.debug("P4 Blame: Could not get CodeMirror EditorView");
                 return;
             }
             
-            console.log("P4 Blame: Updating view with blame data");
+            console.debug("P4 Blame: Updating view with blame data");
             updateBlameInView(editorView, blameData);
         } catch (error) {
             console.error("P4 Blame: Failed to load blame for", filePath, error);
@@ -806,7 +807,7 @@ export default class ObsidianP4 extends Plugin {
      */
     clearBlameCache(): void {
         this.blameProvider.invalidateAll();
-        console.log("P4 Blame: Cache cleared");
+        console.debug("P4 Blame: Cache cleared");
     }
 
     /**
@@ -814,7 +815,7 @@ export default class ObsidianP4 extends Plugin {
      */
     async clearBlameCacheForFile(filePath: string): Promise<void> {
         this.blameProvider.invalidate(filePath);
-        console.log("P4 Blame: Cache cleared for", filePath);
+        console.debug("P4 Blame: Cache cleared for", filePath);
         
         // Reload blame for this file
         await this.loadBlame(filePath);
@@ -834,9 +835,9 @@ export default class ObsidianP4 extends Plugin {
             clearTimeout(existing);
         }
 
-        const timeout = setTimeout(async () => {
+        const timeout = setTimeout(() => {
             this.autoCheckoutDebounce.delete(file.path);
-            await this.showAddFileModal(file);
+            void this.showAddFileModal(file);
         }, 500);
 
         this.autoCheckoutDebounce.set(file.path, timeout);
@@ -1030,7 +1031,7 @@ export default class ObsidianP4 extends Plugin {
                     
                     this.displayMessage(`Rename reverted. Check out the file first to rename it.`);
                 } catch (revertError) {
-                    this.displayError(`Failed to revert rename: ${revertError}`);
+                    this.displayError(`Failed to revert rename: ${revertError instanceof Error ? revertError.message : String(revertError)}`);
                 }
             }
         } catch (error) {
@@ -1207,7 +1208,7 @@ export default class ObsidianP4 extends Plugin {
             new Notice(message);
         }
         this.statusBar?.displayMessage(message);
-        console.log(`P4: ${message}`);
+        console.debug(`P4: ${message}`);
     }
 
     /**
@@ -1223,7 +1224,8 @@ export default class ObsidianP4 extends Plugin {
      * Load settings from storage
      */
     async loadSettings(): Promise<void> {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        const data = await this.loadData() as Partial<P4PluginSettings> | null;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, data ?? {});
     }
 
     /**
